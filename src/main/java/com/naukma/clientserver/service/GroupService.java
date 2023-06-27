@@ -86,7 +86,7 @@ public class GroupService {
         return groups;
     }
 
-    public void updateGroup(Group group) throws GroupNotFoundException {
+    public void updateGroup(Group group) throws GroupNotFoundException, GroupAlreadyExistsException {
         try {
             PreparedStatement statement = connection.prepareStatement(
                     "UPDATE good_group " +
@@ -102,8 +102,10 @@ public class GroupService {
 
             statement.close();
         } catch (SQLException e) {
-            System.out.println("Invalid SQL UPDATE query");
-            e.printStackTrace();
+            if(e.getMessage().contains("UNIQUE constraint failed: good_group.name"))
+                throw new GroupAlreadyExistsException("Group with this name already exists!");
+            else
+                e.printStackTrace();
         }
     }
 
