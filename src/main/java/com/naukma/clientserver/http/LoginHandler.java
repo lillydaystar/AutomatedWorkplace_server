@@ -24,7 +24,7 @@ public class LoginHandler implements HttpHandler {
                     String jwtToken = Jwts.builder()
                             .setSubject(login)
                             .setIssuedAt(new Date())
-                            .signWith(HttpServer.SECRET_KEY)
+                            .signWith(Server.SECRET_KEY)
                             .compact();
 
                     // Convert token to JSON format

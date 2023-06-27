@@ -6,7 +6,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import com.naukma.clientserver.exception.*;
+import com.naukma.clientserver.exception.good.*;
+import com.naukma.clientserver.exception.group.*;
 import com.naukma.clientserver.model.Good;
 import com.naukma.clientserver.request.GoodCreateRequestData;
 import com.naukma.clientserver.request.GoodUpdateRequestData;
@@ -52,7 +53,7 @@ public class GoodHandler implements HttpHandler {
         String token = authorizationHeader.substring(7); // Extract token without "Bearer " prefix
 
         try {
-            Jwts.parser().setSigningKey(HttpServer.SECRET_KEY).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(Server.SECRET_KEY).parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
             System.out.println("Error validating token: " + e.getMessage());
