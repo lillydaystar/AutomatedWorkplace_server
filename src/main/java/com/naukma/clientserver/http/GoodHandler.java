@@ -12,6 +12,7 @@ import com.naukma.clientserver.request.GoodUpdateRequestData;
 import com.naukma.clientserver.service.GoodService;
 
 import java.io.IOException;
+import java.util.List;
 
 public class GoodHandler implements HttpHandler {
     private final GoodService goodService;
@@ -46,6 +47,29 @@ public class GoodHandler implements HttpHandler {
     private void handleGetRequest(HttpExchange exchange) throws IOException {
         int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
+        if (id == -1)
+            handleGetAllRequest(exchange);
+        else
+            handleGetOneRequest(exchange, id);
+    }
+
+    private void handleGetAllRequest(HttpExchange exchange) throws IOException {
+        String responseInfo = retrieveGoods();
+        ServerUtils.sendResponse(exchange, 200, responseInfo);
+    }
+
+    private String retrieveGoods() {
+        List<Good> goods = goodService.getAllGoods();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(goods);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Good object to JSON", e);
+        }
+    }
+
+    private void handleGetOneRequest(HttpExchange exchange, int id) throws IOException {
         try {
             String responseInfo = retrieveGood(id);
             ServerUtils.sendResponse(exchange, 200, responseInfo);
