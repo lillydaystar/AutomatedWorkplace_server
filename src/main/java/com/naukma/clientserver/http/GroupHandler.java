@@ -33,6 +33,8 @@ public class GroupHandler implements HttpHandler {
 
         if(method.equalsIgnoreCase("POST"))
             handlePostRequest(exchange);
+        else if(method.equalsIgnoreCase("PUT"))
+            handlePutRequest(exchange);
     }
 
     private void handlePostRequest(HttpExchange exchange) throws IOException {
@@ -68,6 +70,37 @@ public class GroupHandler implements HttpHandler {
             System.out.println("Can't get ID of created group.");
         }
         return -1;
+    }
+
+    private void handlePutRequest(HttpExchange exchange) throws IOException {
+        String requestBody = ServerUtils.getRequestData(exchange);
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
+
+        try {
+            updateGroup(id, requestBody);
+            ServerUtils.sendResponse(exchange, 204, "");
+        } catch (GroupNotFoundException e) {
+            ServerUtils.sendResponse(exchange, 404, e.getMessage());
+        } catch (GroupAlreadyExistsException e) {
+            ServerUtils.sendResponse(exchange, 409, e.getMessage());
+        }
+    }
+
+    private void updateGroup(int id, String requestBody) throws GroupNotFoundException, GroupAlreadyExistsException {
+        GroupRequestData groupRequestData;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            groupRequestData = objectMapper.readValue(requestBody, GroupRequestData.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error deserializing request body", e);
+        }
+
+        String name = groupRequestData.getName();
+        String description = groupRequestData.getDescription();
+
+        Group updatedGroup = new Group(id, name, description);
+        groupService.updateGroup(updatedGroup);
     }
 
 }
