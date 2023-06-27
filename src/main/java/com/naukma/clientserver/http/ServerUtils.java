@@ -44,4 +44,9 @@ public class ServerUtils {
             return false;
         }
     }
+
+    public static int getIdFromRequestURI(String uri) {
+        String[] pathParts = uri.split("/");
+        return Integer.parseInt(pathParts[pathParts.length - 1]);
+    }
 }
