@@ -96,12 +96,30 @@ public class GroupHandler implements HttpHandler {
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
-        String responseInfo = retrieveGroups();
+        String responseInfo;
+        if (exchange.getRequestURI().getQuery() == null) {
+            responseInfo = retrieveGroups();
+        }
+        else {
+            String order = exchange.getRequestURI().getQuery().split("=")[1];
+            responseInfo = retrieveGroups(order);
+        }
         ServerUtils.sendResponse(exchange, 200, responseInfo);
     }
 
     private String retrieveGroups() {
         List<Group> groups = groupService.getAllGroups();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(groups);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Group list to JSON", e);
+        }
+    }
+
+    private String retrieveGroups(String order) {
+        List<Group> groups = groupService.getGroupsSortedByName(order);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(groups);
