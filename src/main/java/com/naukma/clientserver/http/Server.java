@@ -18,7 +18,7 @@ import java.security.Key;
 import java.sql.Connection;
 
 public class Server {
-    private static final int SERVER_PORT = 8765;
+    private static final int SERVER_PORT = 8080;
     static Key SECRET_KEY = Keys.hmacShaKeyFor(System.getenv("SECRETKEY").getBytes(StandardCharsets.UTF_8));
     private static final String DATABASE = "automated_workplace";
     private GroupService groupService;
@@ -44,6 +44,7 @@ public class Server {
     private void bindContexts(com.sun.net.httpserver.HttpServer server) {
         server.createContext("/login", new LoginHandler(userService));
         server.createContext("/api/good", new GoodHandler(goodService));
+        server.createContext("/api/group", new GroupHandler(groupService));
     }
 
     private void initializeServices()  {

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
 import com.naukma.clientserver.exception.good.*;
 import com.naukma.clientserver.exception.group.*;
 import com.naukma.clientserver.model.Good;
@@ -26,7 +24,7 @@ public class GoodHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String authorizationHeader = exchange.getRequestHeaders().getFirst("Authorization");
 
-        if (!validateToken(authorizationHeader)) {
+        if (!ServerUtils.isTokenValid(authorizationHeader)) {
             ServerUtils.sendResponse(exchange, 403, "Forbidden");
             return;
         }
@@ -45,24 +43,8 @@ public class GoodHandler implements HttpHandler {
             ServerUtils.sendResponse(exchange, 405, "Method Not Allowed!");
     }
 
-    private boolean validateToken(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return false;
-        }
-
-        String token = authorizationHeader.substring(7); // Extract token without "Bearer " prefix
-
-        try {
-            Jwts.parser().setSigningKey(Server.SECRET_KEY).parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            System.out.println("Error validating token: " + e.getMessage());
-            return false;
-        }
-    }
-
     private void handleGetRequest(HttpExchange exchange) throws IOException {
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
             String responseInfo = retrieveGood(id);
@@ -123,11 +105,11 @@ public class GoodHandler implements HttpHandler {
     }
 
     private void handlePutRequest(HttpExchange exchange) throws IOException {
-        String requestInfo = ServerUtils.getRequestData(exchange);
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        String requestBody = ServerUtils.getRequestData(exchange);
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
-            updateGood(id, requestInfo);
+            updateGood(id, requestBody);
             ServerUtils.sendResponse(exchange, 204, "");
         } catch (GoodNotFoundException e) {
             ServerUtils.sendResponse(exchange, 404, e.getMessage());
@@ -155,13 +137,13 @@ public class GoodHandler implements HttpHandler {
         double price = requestData.getPrice();
         int groupId = requestData.getGroupId();
 
-        Good newGood = new Good(id, name, description, producer, quantity, price, groupId);
+        Good updatedGood = new Good(id, name, description, producer, quantity, price, groupId);
 
-        goodService.updateGood(newGood);
+        goodService.updateGood(updatedGood);
     }
 
     private void handleDeleteRequest(HttpExchange exchange) throws IOException {
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
             deleteGood(id);
@@ -175,8 +157,4 @@ public class GoodHandler implements HttpHandler {
         goodService.deleteGood(id);
     }
 
-    private int getIdFromRequestURI(String uri) {
-        String[] pathParts = uri.split("/");
-        return Integer.parseInt(pathParts[pathParts.length - 1]);
-    }
 }

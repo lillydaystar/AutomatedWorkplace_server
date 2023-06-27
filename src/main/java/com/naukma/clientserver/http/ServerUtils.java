@@ -1,6 +1,8 @@
 package com.naukma.clientserver.http;
 
 import com.sun.net.httpserver.HttpExchange;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 
 import java.io.*;
 
@@ -26,5 +28,25 @@ public class ServerUtils {
             os.write(response.getBytes());
             os.close();
         }
+    }
+
+    public static boolean isTokenValid(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            return false;
+
+        String token = authorizationHeader.substring(7); // Extract token without "Bearer " prefix
+
+        try {
+            Jwts.parser().setSigningKey(Server.SECRET_KEY).parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            System.out.println("Error validating token: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static int getIdFromRequestURI(String uri) {
+        String[] pathParts = uri.split("/");
+        return Integer.parseInt(pathParts[pathParts.length - 1]);
     }
 }
