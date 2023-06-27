@@ -1,4 +1,4 @@
-package com.naukma.clientserver.exception;
+package com.naukma.clientserver.exception.good;
 
 public class GoodQuantityConstraintFailedException extends Exception {
     public GoodQuantityConstraintFailedException(String message) {

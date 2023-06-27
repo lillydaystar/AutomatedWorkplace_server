@@ -50,7 +50,7 @@ public class DatabaseInitializationService {
 
             stmt.executeUpdate(sqlCreateGoodGroup);
             stmt.executeUpdate(sqlCreateGood);
-            stmt.executeQuery(sqlCreateUser);
+            stmt.executeUpdate(sqlCreateUser);
         } catch (SQLException e) {
             e.printStackTrace();
         }

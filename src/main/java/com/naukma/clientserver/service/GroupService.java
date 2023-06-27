@@ -1,7 +1,7 @@
 package com.naukma.clientserver.service;
 
-import com.naukma.clientserver.exception.GroupAlreadyExistsException;
-import com.naukma.clientserver.exception.GroupNotFoundException;
+import com.naukma.clientserver.exception.group.GroupAlreadyExistsException;
+import com.naukma.clientserver.exception.group.GroupNotFoundException;
 import com.naukma.clientserver.model.Group;
 
 import java.sql.*;
