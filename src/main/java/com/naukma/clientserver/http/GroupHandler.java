@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 
 import java.io.IOException;
+import java.util.List;
 
 public class GroupHandler implements HttpHandler {
     private final GroupService groupService;
@@ -37,6 +38,8 @@ public class GroupHandler implements HttpHandler {
             handlePutRequest(exchange);
         else if(method.equalsIgnoreCase("DELETE"))
             handleDeleteRequest(exchange);
+        else if(method.equalsIgnoreCase("GET"))
+            handleGetRequest(exchange);
     }
 
     private void handlePostRequest(HttpExchange exchange) throws IOException {
@@ -90,6 +93,22 @@ public class GroupHandler implements HttpHandler {
         Group updatedGroup = new Group(id, name, description);
 
         groupService.updateGroup(updatedGroup);
+    }
+
+    private void handleGetRequest(HttpExchange exchange) throws IOException {
+        String responseInfo = retrieveGroups();
+        ServerUtils.sendResponse(exchange, 200, responseInfo);
+    }
+
+    private String retrieveGroups() {
+        List<Group> groups = groupService.getAllGroups();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(groups);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Group list to JSON", e);
+        }
     }
 
     private void handleDeleteRequest(HttpExchange exchange) throws IOException {
