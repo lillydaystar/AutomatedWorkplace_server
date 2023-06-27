@@ -40,15 +40,17 @@ public class DatabaseInitializationService {
                 "groupId INTEGER NOT NULL, " +
                 "FOREIGN KEY(groupId) REFERENCES good_group(id) ON DELETE CASCADE)";
 
+        String sqlCreateUser = "CREATE TABLE IF NOT EXISTS user " +
+                "(login TEXT UNIQUE NOT NULL PRIMARY KEY, " +
+                "password TEXT NOT NULL)";
+
         try (Statement stmt = connection.createStatement()) {
             // Enable foreign keys
             stmt.execute("PRAGMA foreign_keys = ON");
 
-            // Execute the first CREATE TABLE statement
             stmt.executeUpdate(sqlCreateGoodGroup);
-
-            // Execute the second CREATE TABLE statement
             stmt.executeUpdate(sqlCreateGood);
+            stmt.executeQuery(sqlCreateUser);
         } catch (SQLException e) {
             e.printStackTrace();
         }
