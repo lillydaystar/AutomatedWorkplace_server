@@ -1,5 +1,7 @@
 package com.naukma.clientserver.http;
 
+import com.naukma.clientserver.model.User;
+import com.naukma.clientserver.service.UserService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class LoginHandler implements HttpHandler {
+    private final UserService userService;
+
+    LoginHandler(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -53,9 +60,7 @@ public class LoginHandler implements HttpHandler {
     }
 
     private boolean checkLogin(String login, String password) {
-        final String hardcodedLogin = "login";
-        final String hashedHardcodedPassword = "5f4dcc3b5aa765d61d8327deb882cf99"; // MD5 hash of "password"
-
-        return hardcodedLogin.equals(login) && hashedHardcodedPassword.equals(password);
+        User user = userService.getUser(login);
+        return user.getPassword().equals(password);
     }
 }
