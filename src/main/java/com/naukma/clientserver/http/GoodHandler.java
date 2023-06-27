@@ -44,7 +44,7 @@ public class GoodHandler implements HttpHandler {
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
             String responseInfo = retrieveGood(id);
@@ -105,11 +105,11 @@ public class GoodHandler implements HttpHandler {
     }
 
     private void handlePutRequest(HttpExchange exchange) throws IOException {
-        String requestInfo = ServerUtils.getRequestData(exchange);
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        String requestBody = ServerUtils.getRequestData(exchange);
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
-            updateGood(id, requestInfo);
+            updateGood(id, requestBody);
             ServerUtils.sendResponse(exchange, 204, "");
         } catch (GoodNotFoundException e) {
             ServerUtils.sendResponse(exchange, 404, e.getMessage());
@@ -137,13 +137,13 @@ public class GoodHandler implements HttpHandler {
         double price = requestData.getPrice();
         int groupId = requestData.getGroupId();
 
-        Good newGood = new Good(id, name, description, producer, quantity, price, groupId);
+        Good updatedGood = new Good(id, name, description, producer, quantity, price, groupId);
 
-        goodService.updateGood(newGood);
+        goodService.updateGood(updatedGood);
     }
 
     private void handleDeleteRequest(HttpExchange exchange) throws IOException {
-        int id = getIdFromRequestURI(exchange.getRequestURI().getPath());
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
 
         try {
             deleteGood(id);
@@ -157,8 +157,4 @@ public class GoodHandler implements HttpHandler {
         goodService.deleteGood(id);
     }
 
-    private int getIdFromRequestURI(String uri) {
-        String[] pathParts = uri.split("/");
-        return Integer.parseInt(pathParts[pathParts.length - 1]);
-    }
 }
