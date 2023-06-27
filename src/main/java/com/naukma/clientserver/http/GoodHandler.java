@@ -2,6 +2,9 @@ package com.naukma.clientserver.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.naukma.clientserver.request.GoodCriteriaRequestData;
+import com.naukma.clientserver.service.GoodCriterions.FilteringCriterion;
+import com.naukma.clientserver.service.GoodCriterions.SortingCriterion;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.naukma.clientserver.exception.good.*;
@@ -54,15 +57,34 @@ public class GoodHandler implements HttpHandler {
     }
 
     private void handleGetAllRequest(HttpExchange exchange) throws IOException {
-        String responseInfo = retrieveGoods();
+        List<Good> goods;
+        String requestBody = ServerUtils.getRequestData(exchange);
+        if (requestBody.equals(""))
+            goods = goodService.getAllGoods();
+        else
+            goods = getGoodsWithCriteria(requestBody);
+        String responseInfo = retrieveGoods(goods);
         ServerUtils.sendResponse(exchange, 200, responseInfo);
     }
 
-    private String retrieveGoods() {
-        List<Good> goods = goodService.getAllGoods();
+    private String retrieveGoods(List<Good> goods) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(goods);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Good object to JSON", e);
+        }
+    }
+
+    private List<Good> getGoodsWithCriteria(String requestBody) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            GoodCriteriaRequestData criteriaObject = objectMapper.readValue(requestBody, GoodCriteriaRequestData.class);
+            List<FilteringCriterion> filteringCriteria = criteriaObject.getFilteringCriteria();
+            List<SortingCriterion> sortingCriteria = criteriaObject.getSortingCriteria();
+
+            return goodService.listGoodsByCriteria(filteringCriteria, sortingCriteria);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new RuntimeException("Error serializing Good object to JSON", e);
