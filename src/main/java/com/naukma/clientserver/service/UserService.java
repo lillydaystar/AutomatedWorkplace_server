@@ -1,5 +1,6 @@
 package com.naukma.clientserver.service;
 
+import com.naukma.clientserver.exception.user.UserAlreadyExistsException;
 import com.naukma.clientserver.model.User;
 import com.naukma.clientserver.utils.PasswordHasher;
 
@@ -15,7 +16,7 @@ public class UserService {
         this.connection = connection;
     }
 
-    public void createUser(User user) {
+    public void createUser(User user) throws UserAlreadyExistsException {
         try {
             PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO user (login, password) VALUES (?, ?)");
@@ -27,7 +28,10 @@ public class UserService {
             statement.executeUpdate();
             statement.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if(e.getMessage().contains("UNIQUE constraint failed: user.login"))
+                throw new UserAlreadyExistsException("There is another user with this login!");
+            else
+                e.printStackTrace();
         }
     }
 
@@ -35,7 +39,7 @@ public class UserService {
         User user = null;
         try {
             PreparedStatement statement = connection.prepareStatement(
-                    "SELECT * FROM users WHERE user_login = ?");
+                    "SELECT * FROM user WHERE login = ?");
             statement.setString(1, login);
             ResultSet resultSet = statement.executeQuery();
 
