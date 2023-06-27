@@ -50,18 +50,12 @@ public class GroupHandler implements HttpHandler {
     }
 
     private int createGroup(String requestBody) throws GroupAlreadyExistsException {
-        GroupRequestData groupRequestData;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            groupRequestData = objectMapper.readValue(requestBody, GroupRequestData.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error deserializing request body", e);
-        }
+        GroupRequestData groupRequestData = parseGroupRequestData(requestBody);
+
         String name = groupRequestData.getName();
         String description = groupRequestData.getDescription();
-
         Group newGroup = new Group(name, description);
+
         groupService.createGroup(newGroup);
 
         try {
@@ -87,20 +81,23 @@ public class GroupHandler implements HttpHandler {
     }
 
     private void updateGroup(int id, String requestBody) throws GroupNotFoundException, GroupAlreadyExistsException {
-        GroupRequestData groupRequestData;
+        GroupRequestData groupRequestData = parseGroupRequestData(requestBody);
+
+        String name = groupRequestData.getName();
+        String description = groupRequestData.getDescription();
+        Group updatedGroup = new Group(id, name, description);
+
+        groupService.updateGroup(updatedGroup);
+    }
+
+    private GroupRequestData parseGroupRequestData(String requestBody) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            groupRequestData = objectMapper.readValue(requestBody, GroupRequestData.class);
+            return objectMapper.readValue(requestBody, GroupRequestData.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new RuntimeException("Error deserializing request body", e);
         }
-
-        String name = groupRequestData.getName();
-        String description = groupRequestData.getDescription();
-
-        Group updatedGroup = new Group(id, name, description);
-        groupService.updateGroup(updatedGroup);
     }
 
 }
