@@ -35,6 +35,8 @@ public class GroupHandler implements HttpHandler {
             handlePostRequest(exchange);
         else if(method.equalsIgnoreCase("PUT"))
             handlePutRequest(exchange);
+        else if(method.equalsIgnoreCase("DELETE"))
+            handleDeleteRequest(exchange);
     }
 
     private void handlePostRequest(HttpExchange exchange) throws IOException {
@@ -88,6 +90,17 @@ public class GroupHandler implements HttpHandler {
         Group updatedGroup = new Group(id, name, description);
 
         groupService.updateGroup(updatedGroup);
+    }
+
+    private void handleDeleteRequest(HttpExchange exchange) throws IOException {
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
+
+        try {
+            groupService.deleteGroup(id);
+            ServerUtils.sendResponse(exchange, 204, "");
+        } catch (GroupNotFoundException e) {
+            ServerUtils.sendResponse(exchange, 404, e.getMessage());
+        }
     }
 
     private GroupRequestData parseGroupRequestData(String requestBody) {
