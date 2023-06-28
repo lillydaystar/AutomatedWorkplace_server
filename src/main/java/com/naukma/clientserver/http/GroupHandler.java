@@ -32,13 +32,13 @@ public class GroupHandler implements HttpHandler {
 
         String method = exchange.getRequestMethod();
 
-        if(method.equalsIgnoreCase("POST"))
+        if (method.equalsIgnoreCase("POST"))
             handlePostRequest(exchange);
-        else if(method.equalsIgnoreCase("PUT"))
+        else if (method.equalsIgnoreCase("PUT"))
             handlePutRequest(exchange);
-        else if(method.equalsIgnoreCase("DELETE"))
+        else if (method.equalsIgnoreCase("DELETE"))
             handleDeleteRequest(exchange);
-        else if(method.equalsIgnoreCase("GET"))
+        else if (method.equalsIgnoreCase("GET"))
             handleGetRequest(exchange);
     }
 
@@ -96,17 +96,48 @@ public class GroupHandler implements HttpHandler {
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
+
+        if (id == -1)
+            handleGetAllRequest(exchange);
+        else {
+            handleGetOneRequest(exchange, id);
+        }
+    }
+
+    private void handleGetOneRequest(HttpExchange exchange, int id) throws IOException {
+        try {
+            String responseInfo = retrieveGroup(id);
+            ServerUtils.sendResponse(exchange, 200, responseInfo);
+        } catch (GroupNotFoundException e) {
+            e.printStackTrace();
+            ServerUtils.sendResponse(exchange, 404, e.getMessage());
+        }
+    }
+
+    private String retrieveGroup(int id) throws GroupNotFoundException {
+        Group group = groupService.getGroupById(id);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(group);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Group object to JSON", e);
+        }
+    }
+
+    private void handleGetAllRequest(HttpExchange exchange) throws IOException {
         List<Group> groups;
         if (exchange.getRequestURI().getQuery() == null) {
             groups = groupService.getAllGroups();
-        }
-        else {
+        } else {
             String order = exchange.getRequestURI().getQuery().split("=")[1];
             groups = groupService.getGroupsSortedByName(order);
         }
         String responseInfo = retrieveGroups(groups);
         ServerUtils.sendResponse(exchange, 200, responseInfo);
     }
+
 
     private String retrieveGroups(List<Group> groups) {
         try {
