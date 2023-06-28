@@ -38,7 +38,7 @@ public class GoodService {
             if (e.getMessage().contains("FOREIGN KEY constraint failed"))
                 throw new GroupNotFoundException("First create this group!");
             else if (e.getMessage().contains("UNIQUE constraint failed: good.name"))
-                throw new GoodAlreadyExistsException("This good already exists!");
+                throw new GoodAlreadyExistsException("Good with this name already exists!");
             else if (e.getMessage().contains("CHECK constraint failed: price >= 0"))
                 throw new GoodPriceConstraintFailedException("Price can't be negative!");
             else
