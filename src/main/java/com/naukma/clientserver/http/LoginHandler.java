@@ -4,6 +4,7 @@ import com.naukma.clientserver.model.User;
 import com.naukma.clientserver.service.UserService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 import java.io.IOException;
@@ -28,8 +29,14 @@ public class LoginHandler implements HttpHandler {
 
             if (isValid) {
                 try {
+                    long expirationTimeMillis = System.currentTimeMillis() + 24 * 60 * 60 * 1000; // Поточний час + 24 години
+                    Date expirationDate = new Date(expirationTimeMillis);
+                    Claims claims = Jwts.claims();
+                    claims.setSubject(login);
+                    claims.setExpiration(expirationDate);
+
                     String jwtToken = Jwts.builder()
-                            .setSubject(login)
+                            .setClaims(claims)
                             .setIssuedAt(new Date())
                             .signWith(Server.SECRET_KEY)
                             .compact();

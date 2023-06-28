@@ -28,7 +28,7 @@ public class GoodHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String authorizationHeader = exchange.getRequestHeaders().getFirst("Authorization");
 
-        if (!ServerUtils.isTokenValid(authorizationHeader)) {
+        if (!Server.isTokenValid(authorizationHeader)) {
             ServerUtils.sendResponse(exchange, 403, "Forbidden");
             return;
         }
