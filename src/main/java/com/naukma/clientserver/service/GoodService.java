@@ -38,7 +38,7 @@ public class GoodService {
             if (e.getMessage().contains("FOREIGN KEY constraint failed"))
                 throw new GroupNotFoundException("First create this group!");
             else if (e.getMessage().contains("UNIQUE constraint failed: good.name"))
-                throw new GoodAlreadyExistsException("This good already exists!");
+                throw new GoodAlreadyExistsException("Good with this name already exists!");
             else if (e.getMessage().contains("CHECK constraint failed: price >= 0"))
                 throw new GoodPriceConstraintFailedException("Price can't be negative!");
             else
@@ -47,7 +47,6 @@ public class GoodService {
     }
 
     public Good getGoodById(int id) throws GoodNotFoundException {
-        System.out.println("there");
         try {
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT * FROM good WHERE id = ?");
@@ -55,7 +54,6 @@ public class GoodService {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<Good> goods = parseGoods(resultSet);
-                System.out.println("Goods: " + goods);
                 if (!goods.isEmpty())
                     return goods.get(0);
             }
@@ -112,8 +110,6 @@ public class GoodService {
             statement.setDouble(5, good.getPrice());
             statement.setInt(6, good.getGroupId());
             statement.setInt(7, good.getId());
-
-            System.out.println("ID: " + good.getId());
 
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected == 0)

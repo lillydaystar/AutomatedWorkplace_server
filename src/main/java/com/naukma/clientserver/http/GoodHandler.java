@@ -3,6 +3,7 @@ package com.naukma.clientserver.http;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.naukma.clientserver.request.GoodCriteriaRequestData;
+import com.naukma.clientserver.request.GoodRequestData;
 import com.naukma.clientserver.service.GoodCriterions.FilteringCriterion;
 import com.naukma.clientserver.service.GoodCriterions.SortingCriterion;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,8 +11,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.naukma.clientserver.exception.good.*;
 import com.naukma.clientserver.exception.group.*;
 import com.naukma.clientserver.model.Good;
-import com.naukma.clientserver.request.GoodCreateRequestData;
-import com.naukma.clientserver.request.GoodUpdateRequestData;
 import com.naukma.clientserver.service.GoodService;
 
 import java.io.IOException;
@@ -126,14 +125,8 @@ public class GoodHandler implements HttpHandler {
 
     private int createGood(String requestBody) throws GroupNotFoundException, GoodAlreadyExistsException,
             GoodPriceConstraintFailedException {
-        GoodCreateRequestData requestData;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            requestData = objectMapper.readValue(requestBody, GoodCreateRequestData.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error deserializing request body", e);
-        }
+        GoodRequestData requestData = parseGoodRequestData(requestBody);
+
         String name = requestData.getName();
         String description = requestData.getDescription();
         String producer = requestData.getProducer();
@@ -167,14 +160,7 @@ public class GoodHandler implements HttpHandler {
 
     private void updateGood(int id, String requestBody) throws GroupNotFoundException, GoodAlreadyExistsException,
             GoodPriceConstraintFailedException, GoodQuantityConstraintFailedException, GoodNotFoundException {
-        GoodUpdateRequestData requestData;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            requestData = objectMapper.readValue(requestBody, GoodUpdateRequestData.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error deserializing request body", e);
-        }
+        GoodRequestData requestData = parseGoodRequestData(requestBody);
 
         String name = requestData.getName();
         String description = requestData.getDescription();
@@ -201,6 +187,16 @@ public class GoodHandler implements HttpHandler {
 
     private void deleteGood(int id) throws GoodNotFoundException {
         goodService.deleteGood(id);
+    }
+
+    private GoodRequestData parseGoodRequestData(String json) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(json, GoodRequestData.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error deserializing request body", e);
+        }
     }
 
 }
