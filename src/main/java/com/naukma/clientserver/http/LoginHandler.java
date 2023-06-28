@@ -68,6 +68,6 @@ public class LoginHandler implements HttpHandler {
 
     private boolean checkLogin(String login, String password) {
         User user = userService.getUser(login);
-        return user.getPassword().equals(password);
+        return user != null && user.getPassword().equals(password);
     }
 }
