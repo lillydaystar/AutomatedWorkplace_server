@@ -4,6 +4,9 @@ import com.naukma.clientserver.exception.user.UserAlreadyExistsException;
 import com.naukma.clientserver.model.User;
 import com.naukma.clientserver.service.UserService;
 import com.sun.net.httpserver.HttpServer;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import com.naukma.clientserver.exception.group.GroupAlreadyExistsException;
 import com.naukma.clientserver.model.Group;
@@ -16,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.sql.Connection;
+import java.util.Date;
 
 public class Server {
     private static final int SERVER_PORT = 8080;
@@ -23,7 +27,7 @@ public class Server {
     private static final String DATABASE = "automated_workplace";
     private GroupService groupService;
     private GoodService goodService;
-    private UserService userService;
+    private static UserService userService;
 
     public Server() throws IOException {
         HttpServer server = createServer();
@@ -65,5 +69,27 @@ public class Server {
     private Connection establishDbConnection() {
         DatabaseInitializationService databaseInitializationService = new DatabaseInitializationService();
         return databaseInitializationService.createConnection(DATABASE);
+    }
+
+    public static boolean isTokenValid(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            return false;
+
+        String token = authorizationHeader.substring(7); // Extract token without "Bearer " prefix
+
+        try {
+            Claims claims = Jwts.parser().setSigningKey(Server.SECRET_KEY)
+                    .parseClaimsJws(token).getBody();
+            String login = claims.getSubject();
+            Date expirationDate = claims.getExpiration();
+            if (expirationDate == null)
+                return false;
+            Date currentDate = new Date();
+            return login != null && userService.getUser(login) != null
+                    && currentDate.before(expirationDate);
+        } catch (JwtException e) {
+            System.out.println("Error validating token: " + e.getMessage());
+            return false;
+        }
     }
 }

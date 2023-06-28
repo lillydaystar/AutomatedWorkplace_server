@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 
 import java.io.IOException;
+import java.util.List;
 
 public class GroupHandler implements HttpHandler {
     private final GroupService groupService;
@@ -24,7 +25,7 @@ public class GroupHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String authorizationHeader = exchange.getRequestHeaders().getFirst("Authorization");
 
-        if (!ServerUtils.isTokenValid(authorizationHeader)) {
+        if (!Server.isTokenValid(authorizationHeader)) {
             ServerUtils.sendResponse(exchange, 403, "Forbidden");
             return;
         }
@@ -35,6 +36,10 @@ public class GroupHandler implements HttpHandler {
             handlePostRequest(exchange);
         else if(method.equalsIgnoreCase("PUT"))
             handlePutRequest(exchange);
+        else if(method.equalsIgnoreCase("DELETE"))
+            handleDeleteRequest(exchange);
+        else if(method.equalsIgnoreCase("GET"))
+            handleGetRequest(exchange);
     }
 
     private void handlePostRequest(HttpExchange exchange) throws IOException {
@@ -88,6 +93,40 @@ public class GroupHandler implements HttpHandler {
         Group updatedGroup = new Group(id, name, description);
 
         groupService.updateGroup(updatedGroup);
+    }
+
+    private void handleGetRequest(HttpExchange exchange) throws IOException {
+        List<Group> groups;
+        if (exchange.getRequestURI().getQuery() == null) {
+            groups = groupService.getAllGroups();
+        }
+        else {
+            String order = exchange.getRequestURI().getQuery().split("=")[1];
+            groups = groupService.getGroupsSortedByName(order);
+        }
+        String responseInfo = retrieveGroups(groups);
+        ServerUtils.sendResponse(exchange, 200, responseInfo);
+    }
+
+    private String retrieveGroups(List<Group> groups) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(groups);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error serializing Group list to JSON", e);
+        }
+    }
+
+    private void handleDeleteRequest(HttpExchange exchange) throws IOException {
+        int id = ServerUtils.getIdFromRequestURI(exchange.getRequestURI().getPath());
+
+        try {
+            groupService.deleteGroup(id);
+            ServerUtils.sendResponse(exchange, 204, "");
+        } catch (GroupNotFoundException e) {
+            ServerUtils.sendResponse(exchange, 404, e.getMessage());
+        }
     }
 
     private GroupRequestData parseGroupRequestData(String requestBody) {
