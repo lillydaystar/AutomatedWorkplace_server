@@ -13,12 +13,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LoginTest {
-    private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWxseWRheXN0YXJAZ21haWwuY29tIiwiZXhwIjoxNjg4MTUyNDM0LCJpYXQiOjE2ODgwNjYwMzR9.Mx4ahmyWvJIT66r3A0EiiZULOfc4EDqrMBMH-JmI0Ac";
+public class LoginTest {
     private static final String INVALID_TOKEN = "invalid_token";
     private static final String LOGIN = "testUser";
     private static final String PASSWORD = "testPassword";
@@ -26,15 +26,17 @@ class LoginTest {
     private static UserService mockUserService;
 
     @BeforeAll
-    static void setUp() throws UserAlreadyExistsException {
+    static void setUp() throws UserAlreadyExistsException, IOException {
         mockUserService = new MockUserService();
         mockUserService.createUser(new User("lillydaystar@gmail.com", "ThomasTheBest"));
         mockUserService.createUser(new User("testUser", "testPassword"));
+        Server server = new Server();
+        server.setUserService(mockUserService);
     }
 
     @Test
     void testValidToken() {
-        String authorizationHeader = "Bearer " + VALID_TOKEN;
+        String authorizationHeader = "Bearer " + MockHttpExchange.VALID_TOKEN;
         assertTrue(Server.isTokenValid(authorizationHeader));
     }
 

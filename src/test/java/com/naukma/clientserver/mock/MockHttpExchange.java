@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 
 public class MockHttpExchange extends HttpExchange {
+    public static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWxseWRheXN0YXJAZ21haWwuY29tIiwiZXhwIjoxNjg4MTUyNDM0LCJpYXQiOjE2ODgwNjYwMzR9.Mx4ahmyWvJIT66r3A0EiiZULOfc4EDqrMBMH-JmI0Ac";
     private String requestMethod;
     private URI requestURI;
     private Headers requestHeaders;
@@ -20,6 +21,7 @@ public class MockHttpExchange extends HttpExchange {
 
     public MockHttpExchange() {
         responseBody = new ByteArrayOutputStream();
+        requestHeaders = new Headers();
     }
 
     @Override
