@@ -2,7 +2,6 @@ package com.naukma.clientserver.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.naukma.clientserver.request.GoodCriteriaRequestData;
 import com.naukma.clientserver.request.GoodRequestData;
 import com.naukma.clientserver.service.GoodCriterions.FilteringCriterion;
 import com.naukma.clientserver.service.GoodCriterions.SortingCriterion;
@@ -15,7 +14,6 @@ import com.naukma.clientserver.service.GoodService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +60,7 @@ public class GoodHandler implements HttpHandler {
         List<Good> goods;
 
         // Parse the query parameters
-        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+        Map<String, String> queryParams = ServerUtils.parseQueryParams(exchange.getRequestURI().getQuery());
 
         // Construct filtering criteria
         List<FilteringCriterion> filteringCriteria = new ArrayList<>();
@@ -82,19 +80,6 @@ public class GoodHandler implements HttpHandler {
 
         String responseInfo = retrieveGoods(goods);
         ServerUtils.sendResponse(exchange, 200, responseInfo);
-    }
-
-    private Map<String, String> parseQueryParams(String query) {
-        Map<String, String> queryParams = new HashMap<>();
-        if (query != null) {
-            for (String param : query.split("&")) {
-                String[] keyValuePair = param.split("=");
-                if (keyValuePair.length == 2) {
-                    queryParams.put(keyValuePair[0], keyValuePair[1]);
-                }
-            }
-        }
-        return queryParams;
     }
 
     private String retrieveGoods(List<Good> goods) {

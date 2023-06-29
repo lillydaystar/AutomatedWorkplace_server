@@ -3,6 +3,8 @@ package com.naukma.clientserver.http;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServerUtils {
     public static String getRequestData(HttpExchange exchange) throws IOException {
@@ -33,5 +35,18 @@ public class ServerUtils {
         if (pathParts.length < 4)
             return -1;
         return Integer.parseInt(pathParts[pathParts.length - 1]);
+    }
+
+    public static Map<String, String> parseQueryParams(String query) {
+        Map<String, String> queryParams = new HashMap<>();
+        if (query != null) {
+            for (String param : query.split("&")) {
+                String[] keyValuePair = param.split("=");
+                if (keyValuePair.length == 2) {
+                    queryParams.put(keyValuePair[0], keyValuePair[1]);
+                }
+            }
+        }
+        return queryParams;
     }
 }

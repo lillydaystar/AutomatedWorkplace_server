@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public class TotalSumHandler implements HttpHandler {
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
-        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+        Map<String, String> queryParams = ServerUtils.parseQueryParams(exchange.getRequestURI().getQuery());
 
         // Construct filtering criteria
         List<FilteringCriterion> filteringCriteria = new ArrayList<>();
@@ -56,19 +55,6 @@ public class TotalSumHandler implements HttpHandler {
             totalSum = goodService.getTotalSumOfGoodsByCriteria(filteringCriteria);
 
         ServerUtils.sendResponse(exchange, 200, Double.toString(totalSum));
-    }
-
-    private Map<String, String> parseQueryParams(String query) {
-        Map<String, String> queryParams = new HashMap<>();
-        if (query != null) {
-            for (String param : query.split("&")) {
-                String[] keyValuePair = param.split("=");
-                if (keyValuePair.length == 2) {
-                    queryParams.put(keyValuePair[0], keyValuePair[1]);
-                }
-            }
-        }
-        return queryParams;
     }
 
 }
