@@ -1,4 +1,4 @@
-package com.naukma.clientserver;
+package com.naukma.clientserver.database.groups;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
