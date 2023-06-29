@@ -14,7 +14,10 @@ import com.naukma.clientserver.model.Good;
 import com.naukma.clientserver.service.GoodService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GoodHandler implements HttpHandler {
     private final GoodService goodService;
@@ -57,33 +60,47 @@ public class GoodHandler implements HttpHandler {
 
     private void handleGetAllRequest(HttpExchange exchange) throws IOException {
         List<Good> goods;
-        String requestBody = ServerUtils.getRequestData(exchange);
-        if (requestBody.equals(""))
+
+        // Parse the query parameters
+        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+
+        // Construct filtering criteria
+        List<FilteringCriterion> filteringCriteria = new ArrayList<>();
+        List<SortingCriterion> sortingCriteria = new ArrayList<>();
+
+        if (queryParams.containsKey("groupId"))
+            filteringCriteria.add(new FilteringCriterion("groupId", "=", queryParams.get("groupId")));
+        if (queryParams.containsKey("name"))
+            filteringCriteria.add(new FilteringCriterion("name", "LIKE", queryParams.get("name")));
+
+
+        // If any filtering criteria is provided, use it for filtering
+        if (filteringCriteria.isEmpty())
             goods = goodService.getAllGoods();
         else
-            goods = getGoodsWithCriteria(requestBody);
+            goods = goodService.listGoodsByCriteria(filteringCriteria, sortingCriteria);
+
         String responseInfo = retrieveGoods(goods);
         ServerUtils.sendResponse(exchange, 200, responseInfo);
+    }
+
+    private Map<String, String> parseQueryParams(String query) {
+        Map<String, String> queryParams = new HashMap<>();
+        if (query != null) {
+            for (String param : query.split("&")) {
+                String[] keyValuePair = param.split("=");
+                if (keyValuePair.length == 2) {
+                    queryParams.put(keyValuePair[0], keyValuePair[1]);
+                }
+            }
+        }
+        return queryParams;
     }
 
     private String retrieveGoods(List<Good> goods) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(goods);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error serializing Good object to JSON", e);
-        }
-    }
-
-    private List<Good> getGoodsWithCriteria(String requestBody) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            GoodCriteriaRequestData criteriaObject = objectMapper.readValue(requestBody, GoodCriteriaRequestData.class);
-            List<FilteringCriterion> filteringCriteria = criteriaObject.getFilteringCriteria();
-            List<SortingCriterion> sortingCriteria = criteriaObject.getSortingCriteria();
-
-            return goodService.listGoodsByCriteria(filteringCriteria, sortingCriteria);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new RuntimeException("Error serializing Good object to JSON", e);
