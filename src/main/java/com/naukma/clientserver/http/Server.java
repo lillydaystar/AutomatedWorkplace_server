@@ -47,6 +47,7 @@ public class Server {
 
     private void bindContexts(com.sun.net.httpserver.HttpServer server) {
         server.createContext("/login", new LoginHandler(userService));
+        server.createContext("/api/good/total-cost", new TotalSumHandler(goodService));
         server.createContext("/api/good", new GoodHandler(goodService));
         server.createContext("/api/group", new GroupHandler(groupService));
     }

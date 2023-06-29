@@ -150,13 +150,94 @@ public class GoodService {
 
     public List<Good> listGoodsByCriteria(List<FilteringCriterion> filteringCriteria,
                                           List<SortingCriterion> sortingCriteria) {
-        String query = buildQuery(filteringCriteria, sortingCriteria);
+        String query = buildQueryForListingGoodsByCriteria(filteringCriteria, sortingCriteria);
         return executeListByCriteriaQuery(query, filteringCriteria);
     }
 
-    private String buildQuery(List<FilteringCriterion> filteringCriteria, List<SortingCriterion> sortingCriteria) {
+    private String buildQueryForListingGoodsByCriteria(List<FilteringCriterion> filteringCriteria,
+                                                       List<SortingCriterion> sortingCriteria) {
         StringBuilder query = new StringBuilder("SELECT * FROM good");
+        buildQuery(query, filteringCriteria, sortingCriteria);
+        return query.toString();
+    }
 
+    private List<Good> executeListByCriteriaQuery(String query, List<FilteringCriterion> filteringCriteria) {
+        List<Good> goods = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            // Set the values for the placeholders in the PreparedStatement
+            for (int i = 0; i < filteringCriteria.size(); i++) {
+                FilteringCriterion criterion = filteringCriteria.get(i);
+                preparedStatement.setObject(i + 1, criterion.getValue());
+            }
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                goods = parseGoods(resultSet);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return goods;
+    }
+
+    public double getTotalSumOfAllGoods() {
+        double totalValue = 0.0;
+
+        try {
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(
+                         "SELECT COALESCE(SUM(good.quantity * good.price), 0) AS total_value FROM good")) {
+                if (resultSet.next()) {
+                    totalValue = resultSet.getDouble("total_value");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Invalid SELECT query");
+            e.printStackTrace();
+        }
+
+        return totalValue;
+    }
+
+
+    public double getTotalSumOfGoodsByCriteria(List<FilteringCriterion> filteringCriteria) {
+        String query = buildQueryForTotalSumOfGoodsByCriteria(filteringCriteria);
+        return executeTotalSumByCriteriaQuery(query, filteringCriteria);
+    }
+
+
+    private String buildQueryForTotalSumOfGoodsByCriteria(List<FilteringCriterion> filteringCriteria)
+    {
+        List<SortingCriterion> sortingCriteria = new ArrayList<>();
+        StringBuilder query = new StringBuilder("SELECT SUM(good.quantity * good.price) AS total_value FROM good");
+        buildQuery(query, filteringCriteria, sortingCriteria);
+        return query.toString();
+    }
+
+    private double executeTotalSumByCriteriaQuery(String query, List<FilteringCriterion> filteringCriteria) {
+        double totalValue = 0;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            // Set the values for the placeholders in the PreparedStatement
+            for (int i = 0; i < filteringCriteria.size(); i++) {
+                FilteringCriterion criterion = filteringCriteria.get(i);
+                preparedStatement.setObject(i + 1, criterion.getValue());
+            }
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next())
+                    totalValue = resultSet.getDouble("total_value");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return totalValue;
+    }
+
+
+    private void buildQuery(StringBuilder query, List<FilteringCriterion> filteringCriteria, List<SortingCriterion> sortingCriteria) {
         // Adding filtering criteria
         if (!filteringCriteria.isEmpty()) {
             query.append(" WHERE ");
@@ -185,27 +266,6 @@ public class GoodService {
                     query.append(", ");
             }
         }
-        return query.toString();
-    }
-
-    private List<Good> executeListByCriteriaQuery(String query, List<FilteringCriterion> filteringCriteria) {
-        List<Good> goods = new ArrayList<>();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            // Set the values for the placeholders in the PreparedStatement
-            for (int i = 0; i < filteringCriteria.size(); i++) {
-                FilteringCriterion criterion = filteringCriteria.get(i);
-                preparedStatement.setObject(i + 1, criterion.getValue());
-            }
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                goods = parseGoods(resultSet);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return goods;
     }
 
     private List<Good> parseGoods(ResultSet resultSet) throws SQLException {
