@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpPrincipal;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,6 +19,7 @@ public class MockHttpExchange extends HttpExchange {
     private Headers requestHeaders;
     private int responseCode;
     private ByteArrayOutputStream responseBody;
+    private ByteArrayInputStream requestBody;
 
     public MockHttpExchange() {
         responseBody = new ByteArrayOutputStream();
@@ -56,7 +58,7 @@ public class MockHttpExchange extends HttpExchange {
 
     @Override
     public InputStream getRequestBody() {
-        return null;
+        return requestBody;
     }
 
     @Override
@@ -122,5 +124,9 @@ public class MockHttpExchange extends HttpExchange {
 
     public void setResponseBody(ByteArrayOutputStream responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public void setRequestBody(String requestBody) {
+        this.requestBody = new ByteArrayInputStream(requestBody.getBytes());
     }
 }
