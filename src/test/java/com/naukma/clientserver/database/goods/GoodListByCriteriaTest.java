@@ -1,4 +1,4 @@
-package com.naukma.clientserver;
+package com.naukma.clientserver.database.goods;
 
 import com.naukma.clientserver.exception.good.GoodAlreadyExistsException;
 import com.naukma.clientserver.exception.good.GoodPriceConstraintFailedException;

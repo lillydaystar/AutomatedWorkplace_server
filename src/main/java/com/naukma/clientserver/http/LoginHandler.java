@@ -15,7 +15,7 @@ import java.util.Date;
 public class LoginHandler implements HttpHandler {
     private final UserService userService;
 
-    LoginHandler(UserService userService) {
+    public LoginHandler(UserService userService) {
         this.userService = userService;
     }
 

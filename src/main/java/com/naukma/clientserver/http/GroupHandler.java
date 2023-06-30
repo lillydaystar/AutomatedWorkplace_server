@@ -49,7 +49,6 @@ public class GroupHandler implements HttpHandler {
             String response = "Group with ID = " + createGroupId + " was created successfully!";
             ServerUtils.sendResponse(exchange, 201, response);
         } catch (GroupAlreadyExistsException e) {
-            e.printStackTrace();
             ServerUtils.sendResponse(exchange, 409, e.getMessage());
         }
     }
