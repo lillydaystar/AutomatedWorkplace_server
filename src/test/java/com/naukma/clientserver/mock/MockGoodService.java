@@ -2,6 +2,7 @@ package com.naukma.clientserver.mock;
 
 import com.naukma.clientserver.exception.good.GoodNotFoundException;
 import com.naukma.clientserver.model.Good;
+import com.naukma.clientserver.service.GoodCriterions.FilteringCriterion;
 import com.naukma.clientserver.service.GoodService;
 
 import java.util.ArrayList;
@@ -13,14 +14,35 @@ public class MockGoodService extends GoodService {
     private Map<Integer, Good> mockGoods;
     private int counter = 0;
 
+    private double totalSumOfAllGoods;
+    private double totalSumOfGoodsByCriteria;
+
     public MockGoodService() {
         super(null);
         mockGoods = new HashMap<>();
     }
 
+    public void setTotalSumOfAllGoods(double totalSumOfAllGoods) {
+        this.totalSumOfAllGoods = totalSumOfAllGoods;
+    }
+
+    public void setTotalSumOfGoodsByCriteria(double totalSumOfGoodsByCriteria) {
+        this.totalSumOfGoodsByCriteria = totalSumOfGoodsByCriteria;
+    }
+
+    @Override
+    public double getTotalSumOfAllGoods() {
+        return totalSumOfAllGoods;
+    }
+
+    @Override
+    public double getTotalSumOfGoodsByCriteria(List<FilteringCriterion> criteria) {
+        return totalSumOfGoodsByCriteria;
+    }
+
     @Override
     public List<Good> getAllGoods() {
-        return new ArrayList<Good>(mockGoods.values());
+        return new ArrayList<>(mockGoods.values());
     }
 
     @Override
@@ -29,7 +51,7 @@ public class MockGoodService extends GoodService {
     }
 
     @Override
-    public Good getGoodByName(String name) throws GoodNotFoundException {
+    public Good getGoodByName(String name) {
         for (int i = 0; i < counter; i++) {
             Good good = mockGoods.get(i);
             if (name.equals(good.getName()))
@@ -57,7 +79,7 @@ public class MockGoodService extends GoodService {
     }
 
     @Override
-    public void deleteGood(int id) throws GoodNotFoundException {
+    public void deleteGood(int id) {
         mockGoods.remove(id);
     }
 
