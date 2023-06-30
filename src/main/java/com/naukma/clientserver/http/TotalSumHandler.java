@@ -40,7 +40,6 @@ public class TotalSumHandler implements HttpHandler {
 
         // Construct filtering criteria
         List<FilteringCriterion> filteringCriteria = new ArrayList<>();
-        System.out.println(filteringCriteria);
 
         if (queryParams.containsKey("groupId"))
             filteringCriteria.add(new FilteringCriterion("groupId", "=", queryParams.get("groupId")));

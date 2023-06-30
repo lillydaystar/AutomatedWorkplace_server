@@ -93,4 +93,8 @@ public class Server {
             return false;
         }
     }
+
+    public void setUserService(UserService userService) {
+        Server.userService = userService;
+    }
 }
