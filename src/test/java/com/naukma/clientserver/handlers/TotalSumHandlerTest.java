@@ -1,8 +1,8 @@
 package com.naukma.clientserver.handlers;
 
 import com.naukma.clientserver.exception.user.UserAlreadyExistsException;
-import com.naukma.clientserver.http.Server;
-import com.naukma.clientserver.http.TotalSumHandler;
+import com.naukma.clientserver.https.Server;
+import com.naukma.clientserver.https.TotalSumHandler;
 import com.naukma.clientserver.mock.MockGoodService;
 import com.naukma.clientserver.mock.MockHttpExchange;
 import com.naukma.clientserver.mock.MockUserService;

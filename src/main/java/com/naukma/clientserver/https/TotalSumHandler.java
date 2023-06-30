@@ -1,4 +1,4 @@
-package com.naukma.clientserver.http;
+package com.naukma.clientserver.https;
 
 import com.naukma.clientserver.service.GoodCriterions.FilteringCriterion;
 import com.naukma.clientserver.service.GoodService;
