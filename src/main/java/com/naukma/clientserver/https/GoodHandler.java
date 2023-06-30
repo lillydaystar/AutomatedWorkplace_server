@@ -1,4 +1,4 @@
-package com.naukma.clientserver.http;
+package com.naukma.clientserver.https;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

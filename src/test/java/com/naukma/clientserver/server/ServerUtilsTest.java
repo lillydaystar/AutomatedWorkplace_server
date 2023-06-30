@@ -1,6 +1,6 @@
 package com.naukma.clientserver.server;
 
-import com.naukma.clientserver.http.ServerUtils;
+import com.naukma.clientserver.https.ServerUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

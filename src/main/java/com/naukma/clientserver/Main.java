@@ -1,6 +1,6 @@
 package com.naukma.clientserver;
 
-import com.naukma.clientserver.http.Server;
+import com.naukma.clientserver.https.Server;
 
 import java.io.IOException;
 

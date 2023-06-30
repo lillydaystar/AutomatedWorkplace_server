@@ -1,8 +1,8 @@
 package com.naukma.clientserver.auth;
 
 import com.naukma.clientserver.exception.user.UserAlreadyExistsException;
-import com.naukma.clientserver.http.LoginHandler;
-import com.naukma.clientserver.http.Server;
+import com.naukma.clientserver.https.LoginHandler;
+import com.naukma.clientserver.https.Server;
 import com.naukma.clientserver.mock.MockHttpExchange;
 import com.naukma.clientserver.mock.MockUserService;
 import com.naukma.clientserver.model.User;

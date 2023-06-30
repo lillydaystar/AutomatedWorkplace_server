@@ -1,9 +1,11 @@
-package com.naukma.clientserver.http;
+package com.naukma.clientserver.https;
 
 import com.naukma.clientserver.exception.user.UserAlreadyExistsException;
 import com.naukma.clientserver.model.User;
 import com.naukma.clientserver.service.UserService;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,10 +16,14 @@ import com.naukma.clientserver.service.DatabaseInitializationService;
 import com.naukma.clientserver.service.GoodService;
 import com.naukma.clientserver.service.GroupService;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.sql.Connection;
 import java.util.Date;
 
@@ -29,8 +35,13 @@ public class Server {
     private GoodService goodService;
     private static UserService userService;
 
-    public Server() throws IOException {
-        HttpServer server = createServer();
+    public Server() {
+        HttpsServer server;
+        try {
+            server = createServer();
+        } catch (Exception e) {
+            throw new RuntimeException("Server error!");
+        }
         initializeServices();
         bindContexts(server);
 
@@ -39,9 +50,56 @@ public class Server {
         System.out.println("Server started on port " + SERVER_PORT);
     }
 
-    private com.sun.net.httpserver.HttpServer createServer() throws IOException {
-        com.sun.net.httpserver.HttpServer server = com.sun.net.httpserver.HttpServer.create();
-        server.bind(new InetSocketAddress(SERVER_PORT), 0);
+    private HttpsServer createServer() throws IOException, KeyStoreException, CertificateException,
+            NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
+        HttpsServer server = HttpsServer.create();
+
+        server.bind(new InetSocketAddress(SERVER_PORT), 0);  // 0 - unlimited backlog of incoming connections
+
+        char[] passphrase = "password".toCharArray();
+
+        // Create an instance of KeyStore with Java KeyStore (JKS) as the type
+        KeyStore ks = KeyStore.getInstance("JKS");
+        // Load our keystore file into the KeyStore instance
+        ks.load(Files.newInputStream(Paths.get("your-keystore.jks")), passphrase);
+
+        // Get a KeyManagerFactory instance using the SunX509 algorithm
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, passphrase);
+
+        // Get a TrustManagerFactory instance using the SunX509 algorithm
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(ks);
+
+        // Get an instance of SSLContext for TLS (Transport Layer Security) protocol
+        SSLContext ssl = SSLContext.getInstance("TLS");
+        // Initialize the SSLContext with the key managers and trust managers
+        ssl.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        // Set the HttpsConfigurator to the server to determine the encryption settings for secure connections
+        server.setHttpsConfigurator(new HttpsConfigurator(ssl) {
+            public void configure(HttpsParameters params) {
+                try {
+                    SSLContext c = SSLContext.getDefault();
+
+                    // Create an SSLEngine instance from the SSLContext
+                    SSLEngine engine = c.createSSLEngine();
+
+                    params.setNeedClientAuth(false);
+                    // Set the cipher suites that will be enabled for use
+                    params.setCipherSuites(engine.getEnabledCipherSuites());
+                    // Set the versions of the SSL/TLS protocol that will be enabled for use
+                    params.setProtocols(engine.getEnabledProtocols());
+                    // Get the default SSL parameters
+                    SSLParameters defaultSSLParameters = c.getDefaultSSLParameters();
+                    // Set the SSL parameters to be used for the SSL connections
+                    params.setSSLParameters(defaultSSLParameters);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Failed to create HTTPS server");
+                }
+            }
+        });
         return server;
     }
 
