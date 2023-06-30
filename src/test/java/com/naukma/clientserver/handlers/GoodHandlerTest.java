@@ -132,9 +132,6 @@ public class GoodHandlerTest {
         mockHttpExchange.setRequestURI(URI.create("/api/good/1"));
         mockHttpExchange.getRequestHeaders().add("Authorization", "Bearer " + MockHttpExchange.VALID_TOKEN);
         mockHttpExchange.setResponseBody(new ByteArrayOutputStream());
-/*
-        Good mockGood = new Good("Good1", "Description1", "Producer1", 10.0, 1);
-        ((MockGoodService) mockGoodService).setMockGood(mockGood);*/
 
         goodHandler.handle(mockHttpExchange);
 
